@@ -1590,10 +1590,14 @@ void FlexCounter::flexCounterThreadRunFunction()
         MUTEX_UNLOCK; // explicit unlock
 
         // nothing to collect, wait until notified
+        if (m_runFlexCounterThread) {
+            // In a race condition, somehow the notification to release
+            // the lock/wait comes before locking/waiting . Checking only
+            // if m_runFlexCounterThread is not NULL, then wait..
+            std::unique_lock<std::mutex> lk(m_mtxSleep);
 
-        std::unique_lock<std::mutex> lk(m_mtxSleep);
-
-        m_pollCond.wait(lk); // wait on mutex
+            m_pollCond.wait(lk); // wait on mutex
+        }
     }
 }
 
