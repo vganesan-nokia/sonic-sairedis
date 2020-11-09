@@ -6,6 +6,7 @@
 #include <net/if.h>
 
 #include <fstream>
+#include <cctype>
 
 using namespace saivs;
 
@@ -29,13 +30,7 @@ bool CorePortIndexMapFileParser::isInterfaceNameValid(
     {
         char c = name[i];
 
-        if (c >= '0' && c <= '9')
-            continue;
-
-        if (c >= 'a' && c <= 'z')
-            continue;
-
-        if (c >= 'A' && c <= 'Z')
+        if (std::isalnum(c))
             continue;
 
         SWSS_LOG_ERROR("invalid character '%c' in interface name %s", c, name.c_str());
