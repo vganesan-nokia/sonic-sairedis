@@ -659,6 +659,12 @@ sai_status_t VirtualSwitchSaiInterface::create(
             return SAI_STATUS_FAILURE;
         }
 
+        //Initialize switch for VOQ attributes
+        if ((ss->initialize_voq_switch_objects(attr_count, attr_list)) != SAI_STATUS_SUCCESS)
+        {
+            SWSS_LOG_ERROR("VOQ switch initialization failed!");
+        }
+
         if (warmBootState != nullptr)
         {
             update_local_metadata(switchId);

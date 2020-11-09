@@ -84,6 +84,19 @@ extern "C" {
  */
 #define SAI_VS_UNITTEST_ENABLE_UNITTESTS  "enable_unittests"
 
+/**
+ * @def SAI_KEY_VS_CORE_PORT_INDEX_MAP_FILE
+ *
+ * For VOQ systems if specified in profile.ini it should point to eth interface to
+ * core and core port index map as port name:core_index,core_port_index
+ *
+ * Example:
+ * eth1:0,1
+ * eth17:1,1
+ *
+ */
+#define SAI_KEY_VS_CORE_PORT_INDEX_MAP_FILE  "SAI_VS_CORE_PORT_INDEX_MAP_FILE"
+
 typedef enum _sai_vs_switch_attr_t
 {
     /**
