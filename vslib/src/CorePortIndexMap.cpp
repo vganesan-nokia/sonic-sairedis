@@ -6,6 +6,8 @@
 
 using namespace saivs;
 
+#define VS_IF_PREFIX   "eth"
+
 CorePortIndexMap::CorePortIndexMap(
         _In_ uint32_t switchIndex):
     m_switchIndex(switchIndex)
@@ -128,7 +130,7 @@ std::shared_ptr<CorePortIndexMap> CorePortIndexMap::getDefaultCorePortIndexMap(
 
     for (uint32_t idx = 0; idx < defaultPortCount; idx++)
     {
-        auto ifname = "eth" + std::to_string(idx);
+        auto ifname = VS_IF_PREFIX + std::to_string(idx);
 
         std::vector<uint32_t> cpidx;
 
@@ -164,7 +166,7 @@ const std::vector<std::vector<uint32_t>> CorePortIndexMap::getCorePortIndexVecto
 }
 
 std::string CorePortIndexMap::getInterfaceFromCorePortIndex(
-        _In_ std::vector<uint32_t> corePortIndex) const
+        _In_ const std::vector<uint32_t>& corePortIndex) const
 {
     SWSS_LOG_ENTER();
 

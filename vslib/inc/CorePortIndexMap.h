@@ -48,7 +48,7 @@ namespace saivs
              * @return Interface name or empty string if core and core port index are not found.
              */
             std::string getInterfaceFromCorePortIndex(
-                    _In_ std::vector<uint32_t> corePortIndex) const;
+                    _In_ const std::vector<uint32_t>& corePortIndex) const;
 
         public:
 
