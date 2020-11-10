@@ -1822,9 +1822,6 @@ sai_status_t SwitchStateBase::refresh_read_only(
             case SAI_SYSTEM_PORT_ATTR_TYPE:
             case SAI_SYSTEM_PORT_ATTR_PORT:
                 return SAI_STATUS_SUCCESS;
-
-            case SAI_SYSTEM_PORT_ATTR_CONFIG_INFO:
-                return refresh_system_port_config_info(meta, object_id);
         }
     }
 
@@ -2532,6 +2529,11 @@ sai_status_t SwitchStateBase::create_system_ports(
 
     SWSS_LOG_INFO("create system ports");
 
+    if(!sys_port_cfg_list)
+    {
+        return SAI_STATUS_FAILURE;
+    }
+
     m_system_port_list.clear();
 
     for (uint32_t i = 0; i < sys_port_count; i++)
@@ -2615,17 +2617,4 @@ sai_status_t SwitchStateBase::set_voq_switch_attributes(
     attr.value.u32 = voq_max_cores;
 
     return set(SAI_OBJECT_TYPE_SWITCH, m_switch_id, &attr);
-}
-
-sai_status_t SwitchStateBase::refresh_system_port_config_info(
-        _In_ const sai_attr_metadata_t *meta,
-        _In_ sai_object_id_t system_port_oid)
-{
-    SWSS_LOG_ENTER();
-
-    // Eventhough, this is not a read-only attribute, currently the system ports are configured
-    // only during creation. No dynamic configuration changes after creation. Threfore currently
-    // no referesh is needed
-
-    return SAI_STATUS_SUCCESS;
 }

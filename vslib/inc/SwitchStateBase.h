@@ -136,10 +136,6 @@ namespace saivs
             virtual sai_status_t refresh_port_list(
                     _In_ const sai_attr_metadata_t *meta);
 
-            sai_status_t refresh_system_port_config_info(
-                    _In_ const sai_attr_metadata_t *meta,
-                    _In_ sai_object_id_t system_port_oid);
-
         public:
 
             virtual sai_status_t warm_boot_initialize_objects();
