@@ -2523,7 +2523,7 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
 sai_status_t SwitchStateBase::create_system_ports(
        _In_ int32_t voq_switch_id,
        _In_ uint32_t sys_port_count,
-       _In_ sai_system_port_config_t *sys_port_cfg_list)
+       _In_ const sai_system_port_config_t *sys_port_cfg_list)
 {
     SWSS_LOG_ENTER();
 
