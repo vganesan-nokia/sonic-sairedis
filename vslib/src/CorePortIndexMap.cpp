@@ -174,7 +174,7 @@ std::string CorePortIndexMap::getInterfaceFromCorePortIndex(
 
     if (it == m_corePortIndexToIfName.end())
     {
-        SWSS_LOG_WARN("Core port index (%d, %d) not found on index %u", corePortIndex[0], corePortIndex[1], m_switchIndex);
+        SWSS_LOG_WARN("Core port index (%d, %d) not found on index %u", corePortIndex.at(0), corePortIndex.at(1), m_switchIndex);
 
         return "";
     }
