@@ -540,7 +540,9 @@ std::shared_ptr<SwitchStateBase> VirtualSwitchSaiInterface::init_switch(
         _In_ sai_object_id_t switch_id,
         _In_ std::shared_ptr<SwitchConfig> config,
         _In_ std::shared_ptr<WarmBootState> warmBootState,
-        _In_ std::weak_ptr<saimeta::Meta> meta)
+        _In_ std::weak_ptr<saimeta::Meta> meta,
+        _In_ uint32_t attr_count,
+        _In_ const sai_attribute_t *attr_list)
 {
     SWSS_LOG_ENTER();
 
@@ -602,6 +604,15 @@ std::shared_ptr<SwitchStateBase> VirtualSwitchSaiInterface::init_switch(
             SWSS_LOG_THROW("unable to init switch %s", sai_serialize_status(status).c_str());
         }
 
+        // Initialize switch for VOQ attributes
+
+        status = ss->initialize_voq_switch_objects(attr_count, attr_list);
+
+        if (status != SAI_STATUS_SUCCESS)
+        {
+            SWSS_LOG_THROW("VOQ switch initialization failed!");
+        }
+
         SWSS_LOG_NOTICE("initialized switch %s", sai_serialize_object_id(switch_id).c_str());
     }
 
@@ -652,17 +663,11 @@ sai_status_t VirtualSwitchSaiInterface::create(
             }
         }
 
-        auto ss = init_switch(switchId, config, warmBootState, m_meta);
+        auto ss = init_switch(switchId, config, warmBootState, m_meta, attr_count, attr_list);
 
         if (!ss)
         {
             return SAI_STATUS_FAILURE;
-        }
-
-        // Initialize switch for VOQ attributes
-        if ((ss->initialize_voq_switch_objects(attr_count, attr_list)) != SAI_STATUS_SUCCESS)
-        {
-            SWSS_LOG_THROW("VOQ switch initialization failed!");
         }
 
         if (warmBootState != nullptr)
