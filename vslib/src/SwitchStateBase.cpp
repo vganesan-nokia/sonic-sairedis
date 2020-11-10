@@ -1820,9 +1820,11 @@ sai_status_t SwitchStateBase::refresh_read_only(
         switch (meta->attrid)
         {
             case SAI_SYSTEM_PORT_ATTR_TYPE:
-            case SAI_SYSTEM_PORT_ATTR_CONFIG_INFO:
             case SAI_SYSTEM_PORT_ATTR_PORT:
                 return SAI_STATUS_SUCCESS;
+
+            case SAI_SYSTEM_PORT_ATTR_CONFIG_INFO:
+                return refresh_system_port_config_info(meta, object_id);
         }
     }
 
@@ -2457,6 +2459,7 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
         switch (attr_list[i].id)
         {
             case SAI_SWITCH_ATTR_TYPE:
+
                 if (attr_list[i].value.u32 != SAI_SWITCH_TYPE_VOQ)
                 {
                     //Switch is not being set as VOQ type.
@@ -2470,6 +2473,7 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
 
             case SAI_SWITCH_ATTR_SWITCH_ID:
                 voq_switch_id = (int32_t) attr_list[i].value.u32;
+
                 if (voq_switch_id < 0)
                 {
                     SWSS_LOG_ERROR("Invalid VOQ switch id %d", voq_switch_id);
@@ -2479,6 +2483,7 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
 
             case SAI_SWITCH_ATTR_MAX_SYSTEM_CORES:
                 voq_max_cores = attr_list[i].value.u32;
+
                 if (voq_max_cores < 1)
                 {
                     SWSS_LOG_ERROR("Invalid VOQ max system cores %d", voq_max_cores);
@@ -2489,6 +2494,7 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
             case SAI_SWITCH_ATTR_SYSTEM_PORT_CONFIG_LIST:
                 sys_port_count = attr_list[i].value.sysportconfiglist.count;
                 sys_port_cfg_list = attr_list[i].value.sysportconfiglist.list;
+
                 if (sys_port_count < 1 || !sys_port_cfg_list)
                 {
                     SWSS_LOG_ERROR("Invalid voq system port config info! sys port count %d, sys port list %p", sys_port_count, sys_port_cfg_list);
@@ -2497,14 +2503,14 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
                 break;
 
             default:
-                //Ignore other attributes. They are processed elsewhere.
+                // Ignore other attributes. They are processed elsewhere.
                 break;
         }
     }
 
     if (!voq_switch)
     {
-        //No switch type attribute in the attribute list.
+        // No switch type attribute in the attribute list.
         return SAI_STATUS_SUCCESS;
     }
 
@@ -2513,8 +2519,6 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
     CHECK_STATUS(set_system_port_list());
 
     CHECK_STATUS(set_voq_switch_attributes(voq_switch_id, voq_max_cores));
-
-    SWSS_LOG_NOTICE("Initialized VOQ switch.");
 
     return SAI_STATUS_SUCCESS;
 }
@@ -2554,7 +2558,7 @@ sai_status_t SwitchStateBase::create_system_ports(
         {
             attr.value.s32 = SAI_SYSTEM_PORT_TYPE_LOCAL;
 
-            //Need to set local port oid attribute TODO
+            // Need to set local port oid attribute TODO
         }
 
         CHECK_STATUS(set(SAI_OBJECT_TYPE_SYSTEM_PORT, system_port_id, &attr));
@@ -2611,4 +2615,17 @@ sai_status_t SwitchStateBase::set_voq_switch_attributes(
     attr.value.u32 = voq_max_cores;
 
     return set(SAI_OBJECT_TYPE_SWITCH, m_switch_id, &attr);
+}
+
+sai_status_t SwitchStateBase::refresh_system_port_config_info(
+        _In_ const sai_attr_metadata_t *meta,
+        _In_ sai_object_id_t system_port_oid)
+{
+    SWSS_LOG_ENTER();
+
+    // Eventhough, this is not a read-only attribute, currently the system ports are configured
+    // only during creation. No dynamic configuration changes after creation. Threfore currently
+    // no referesh is needed
+
+    return SAI_STATUS_SUCCESS;
 }
