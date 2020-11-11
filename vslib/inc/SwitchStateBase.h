@@ -96,10 +96,6 @@ namespace saivs
 
             sai_status_t set_system_port_list();
 
-            sai_status_t set_voq_switch_attributes(
-                    _In_ int32_t voq_switch_id,
-                    _In_ uint32_t voq_max_cores);
-
         public:
 
             virtual sai_status_t initialize_default_objects();
@@ -134,6 +130,9 @@ namespace saivs
                     _In_ sai_object_id_t vlan_id);
 
             virtual sai_status_t refresh_port_list(
+                    _In_ const sai_attr_metadata_t *meta);
+
+            virtual sai_status_t refresh_system_port_list(
                     _In_ const sai_attr_metadata_t *meta);
 
         public:

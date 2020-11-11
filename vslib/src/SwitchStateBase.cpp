@@ -1786,7 +1786,7 @@ sai_status_t SwitchStateBase::refresh_read_only(
 
             case SAI_SWITCH_ATTR_NUMBER_OF_SYSTEM_PORTS:
             case SAI_SWITCH_ATTR_SYSTEM_PORT_LIST:
-                return SAI_STATUS_SUCCESS;
+                return refresh_system_port_list(meta);
         }
     }
 
@@ -2515,8 +2515,6 @@ sai_status_t SwitchStateBase::initialize_voq_switch_objects(
 
     CHECK_STATUS(set_system_port_list());
 
-    CHECK_STATUS(set_voq_switch_attributes(voq_switch_id, voq_max_cores));
-
     return SAI_STATUS_SUCCESS;
 }
 
@@ -2593,28 +2591,16 @@ sai_status_t SwitchStateBase::set_system_port_list()
     return set(SAI_OBJECT_TYPE_SWITCH, m_switch_id, &attr);
 }
 
-sai_status_t SwitchStateBase::set_voq_switch_attributes(
-        _In_ int32_t voq_switch_id,
-        _In_ uint32_t voq_max_cores)
+sai_status_t SwitchStateBase::refresh_system_port_list(
+        _In_ const sai_attr_metadata_t *meta)
 {
     SWSS_LOG_ENTER();
 
-    SWSS_LOG_INFO("set voq switch attributes");
+    // Currently, system ports info are not changing and also since currently the local
+    // port oid for local system ports is retrieved only during portsorch initialization,
+    // no referesh is done
 
-    sai_attribute_t attr;
+    // In the future, when dynamic system port config (add/delete) is implemented, re-visit TODO
 
-    attr.id = SAI_SWITCH_ATTR_TYPE;
-    attr.value.s32 = SAI_SWITCH_TYPE_VOQ;
-
-    CHECK_STATUS(set(SAI_OBJECT_TYPE_SWITCH, m_switch_id, &attr));
-
-    attr.id = SAI_SWITCH_ATTR_SWITCH_ID;
-    attr.value.u32 = voq_switch_id;
-
-    CHECK_STATUS(set(SAI_OBJECT_TYPE_SWITCH, m_switch_id, &attr));
-
-    attr.id = SAI_SWITCH_ATTR_MAX_SYSTEM_CORES;
-    attr.value.u32 = voq_max_cores;
-
-    return set(SAI_OBJECT_TYPE_SWITCH, m_switch_id, &attr);
+    return SAI_STATUS_SUCCESS;
 }
