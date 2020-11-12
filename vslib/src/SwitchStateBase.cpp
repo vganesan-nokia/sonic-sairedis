@@ -2596,11 +2596,9 @@ sai_status_t SwitchStateBase::refresh_system_port_list(
 {
     SWSS_LOG_ENTER();
 
-    // Currently, system ports info are not changing and also since currently the local
-    // port oid for local system ports is retrieved only during portsorch initialization,
-    // no referesh is done
+    // Currently, system ports info are not changing. So no referesh is done
 
-    // In the future, when dynamic system port config (add/delete) is implemented, re-visit TODO
+    // TODO In the future, when dynamic system port config (add/delete) is implemented, re-visit
 
     return SAI_STATUS_SUCCESS;
 }
