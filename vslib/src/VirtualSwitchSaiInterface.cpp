@@ -597,20 +597,11 @@ std::shared_ptr<SwitchStateBase> VirtualSwitchSaiInterface::init_switch(
     }
     else
     {
-        sai_status_t status = ss->initialize_default_objects(); // TODO move to constructor
+        sai_status_t status = ss->initialize_default_objects(attr_count, attr_list); // TODO move to constructor
 
         if (status != SAI_STATUS_SUCCESS)
         {
             SWSS_LOG_THROW("unable to init switch %s", sai_serialize_status(status).c_str());
-        }
-
-        // Initialize switch for VOQ attributes
-
-        status = ss->initialize_voq_switch_objects(attr_count, attr_list);
-
-        if (status != SAI_STATUS_SUCCESS)
-        {
-            SWSS_LOG_THROW("VOQ switch initialization failed!");
         }
 
         SWSS_LOG_NOTICE("initialized switch %s", sai_serialize_object_id(switch_id).c_str());
