@@ -2580,13 +2580,13 @@ sai_status_t SwitchStateBase::create_system_ports(
                             corePortIndexVector[idx][1] == sys_port_cfg_list[i].attached_core_port_index &&
                             idx < m_port_list.size())
                     {
-                        sai_attribute_t lp_attr;
-                        lp_attr.id = SAI_SYSTEM_PORT_ATTR_PORT;
-
                         // m_port_list entries are in the same order as lane maps. The core port index maps are in the
                         // same order as the lane maps. So m_port_list at the index corresponding to the core port index map
                         // will be the port corresponding to the system port with core port index matching core port index map
 
+                        sai_attribute_t lp_attr;
+
+                        lp_attr.id = SAI_SYSTEM_PORT_ATTR_PORT;
                         lp_attr.value.oid = m_port_list.at(idx);
 
                         CHECK_STATUS(set(SAI_OBJECT_TYPE_SYSTEM_PORT, system_port_id, &lp_attr));
@@ -2598,13 +2598,15 @@ sai_status_t SwitchStateBase::create_system_ports(
                 if (idx >= n_map)
                 {
                     SWSS_LOG_ERROR("Core port index not found for system port %d for switch %s. Local port oid is not set!",
-                            sai_serialize_object_id(m_switch_id).c_str(),sys_port_cfg_list[i].port_id);
+                            sys_port_cfg_list[i].port_id,
+                            sai_serialize_object_id(m_switch_id).c_str());
                 }
             }
             else
             {
                 SWSS_LOG_ERROR("Core port index map for switch %s is NULL. Local port oid is not set for system port %d!",
-                        sai_serialize_object_id(m_switch_id).c_str(), sys_port_cfg_list[i].port_id);
+                        sai_serialize_object_id(m_switch_id).c_str(),
+                        sys_port_cfg_list[i].port_id);
             }
         }
 
