@@ -2746,9 +2746,8 @@ sai_status_t SwitchStateBase::createVoqSystemNeighborEntry(
         return SAI_STATUS_FAILURE;
     }
 
-    if(!is_local && encap_index == 0)
+    if (!is_local && encap_index == 0)
     {
-
         SWSS_LOG_ERROR("VOQ neigh info mismatch for %s. attr is_local is false. encap_index is 0", serializedObjectId.c_str());
 
         return SAI_STATUS_FAILURE;
