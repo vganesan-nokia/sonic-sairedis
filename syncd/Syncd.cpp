@@ -202,6 +202,9 @@ void Syncd::performStartupLogic()
 
     if (m_isWarmStart && (m_commandLineOptions->m_startType != SAI_START_TYPE_FASTFAST_BOOT))
     {
+        SWSS_LOG_WARN("override command line startType=%s via SAI_START_TYPE_WARM_BOOT",
+                CommandLineOptions::startTypeToString(m_commandLineOptions->m_startType).c_str());
+
         m_commandLineOptions->m_startType = SAI_START_TYPE_WARM_BOOT;
     }
 
@@ -1924,8 +1927,6 @@ void Syncd::syncUpdateRedisQuadEvent(
     const std::string& key = kfvKey(kco);
 
     auto& values = kfvFieldsValues(kco);
-
-    const std::string& strObjectId = key.substr(key.find(":") + 1);
 
     sai_object_meta_key_t metaKey;
     sai_deserialize_object_meta_key(key, metaKey);
