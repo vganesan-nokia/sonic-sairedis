@@ -2857,9 +2857,9 @@ sai_status_t SwitchStateBase::createVoqSystemNeighborEntry(
 
     CHECK_STATUS(create_internal(SAI_OBJECT_TYPE_NEIGHBOR_ENTRY, serializedObjectId, switch_id, attr_count, attr_list));
 
-    if (encap_index == 0)
+    if (impose_encap_index == false)
     {
-        // Encap index not provided. Assign encap index.
+        // Encap index is not imposed. Assign encap index.
         // The only requirement for the encap index is it must be locally
         // unique in asic. Lower 32 bits of the ip address is used as encap index
 
