@@ -41,6 +41,7 @@ namespace sairedis
             std::string m_dbState;
 
             bool m_zmqEnable;
+            bool m_zmqDbPersistence;
 
             std::string m_zmqEndpoint;
 

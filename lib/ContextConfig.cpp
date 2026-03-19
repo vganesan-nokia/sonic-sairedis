@@ -18,6 +18,7 @@ ContextConfig::ContextConfig(
     m_dbFlex(dbFlex),
     m_dbState(dbState),
     m_zmqEnable(false),
+    m_zmqDbPersistence(true),
     m_zmqEndpoint("ipc:///tmp/zmq_ep"),
     m_zmqNtfEndpoint("ipc:///tmp/zmq_ntf_ep")
 {

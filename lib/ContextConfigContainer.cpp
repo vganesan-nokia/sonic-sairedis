@@ -124,11 +124,14 @@ std::shared_ptr<ContextConfigContainer> ContextConfigContainer::loadFromFile(
             auto cc = std::make_shared<ContextConfig>(guid, name, dbAsic, dbCounters, dbFlex, dbState);
 
             cc->m_zmqEnable = item["zmq_enable"];
+            if (item.contains("zmq_db_persistence"))
+                cc->m_zmqDbPersistence = item["zmq_db_persistence"];
             cc->m_zmqEndpoint = item["zmq_endpoint"];
             cc->m_zmqNtfEndpoint = item["zmq_ntf_endpoint"];
 
-            SWSS_LOG_NOTICE("contextConfig zmq enable %s, endpoint: %s, ntf endpoint: %s",
+            SWSS_LOG_NOTICE("contextConfig zmq enable %s, db_persistence %s, endpoint: %s, ntf endpoint: %s",
                     (cc->m_zmqEnable) ? "true" : "false",
+                    (cc->m_zmqDbPersistence) ? "true" : "false",
                     cc->m_zmqEndpoint.c_str(),
                     cc->m_zmqNtfEndpoint.c_str());
 

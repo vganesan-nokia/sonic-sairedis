@@ -425,7 +425,9 @@ sai_status_t RedisRemoteSaiInterface::setRedisExtensionAttribute(
                             m_contextConfig->m_zmqEndpoint,
                             m_contextConfig->m_zmqNtfEndpoint,
                             std::bind(&RedisRemoteSaiInterface::handleNotification, this, _1, _2, _3),
-                            m_zmqResponseBufferSize);
+                            m_zmqResponseBufferSize,
+                            m_contextConfig->m_dbAsic,
+                            m_contextConfig->m_zmqDbPersistence);
 
                     m_communicationChannel->setResponseTimeout(m_responseTimeoutMs);
 

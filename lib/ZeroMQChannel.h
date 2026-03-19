@@ -6,6 +6,8 @@
 #include "swss/consumertable.h"
 #include "swss/notificationconsumer.h"
 #include "swss/selectableevent.h"
+#include "swss/asyncdbupdater.h"
+#include "swss/dbconnector.h"
 
 #include <memory>
 #include <functional>
@@ -23,7 +25,9 @@ namespace sairedis
                     _In_ const std::string& endpoint,
                     _In_ const std::string& ntfEndpoint,
                     _In_ Channel::Callback callback,
-                    _In_ long zmqResponseBufferSize = ZMQ_RESPONSE_DEFAULT_BUFFER_SIZE);
+                    _In_ long zmqResponseBufferSize = ZMQ_RESPONSE_DEFAULT_BUFFER_SIZE,
+                    _In_ const std::string& dbName = "ASIC_DB",
+                    _In_ bool dbPersistence = true);
 
             virtual ~ZeroMQChannel();
 
@@ -68,5 +72,11 @@ namespace sairedis
             void* m_ntfSocket;
 
             long m_zmqResponseBufferSize;
+
+            bool m_dbPersistence;
+
+            std::unique_ptr<swss::DBConnector> m_db;
+
+            std::unique_ptr<swss::AsyncDBUpdater> m_asyncDBUpdater;
     };
 }
