@@ -6,6 +6,7 @@
 
 #include "swss/logger.h"
 #include "swss/select.h"
+#include "swss/schema.h"
 
 #include <zmq.h>
 #include <unistd.h>
@@ -14,11 +15,87 @@ using namespace sairedis;
 
 #define ZMQ_MAX_RETRY 10
 
+namespace
+{
+    /* Map SAI/Redis command to the op string AsyncDBUpdater expects (SET/DEL).
+     * AsyncDBUpdater only writes to DB when op is SET_COMMAND or DEL_COMMAND;
+     * raw SAI commands like "create"/"remove" are logged as unknown and dropped. */
+    bool asicStateCommandToOp(const std::string& command, std::string& outOp)
+    {
+        if (command == REDIS_ASIC_STATE_COMMAND_CREATE ||
+            command == REDIS_ASIC_STATE_COMMAND_SET ||
+            command == REDIS_ASIC_STATE_COMMAND_BULK_CREATE ||
+            command == REDIS_ASIC_STATE_COMMAND_BULK_SET)
+        {
+            outOp = SET_COMMAND;
+            return true;
+        }
+        if (command == REDIS_ASIC_STATE_COMMAND_REMOVE ||
+            command == REDIS_ASIC_STATE_COMMAND_BULK_REMOVE)
+        {
+            outOp = DEL_COMMAND;
+            return true;
+        }
+        return false;
+    }
+
+    bool isBulkCommand(const std::string& command)
+    {
+        return command == REDIS_ASIC_STATE_COMMAND_BULK_CREATE ||
+               command == REDIS_ASIC_STATE_COMMAND_BULK_SET ||
+               command == REDIS_ASIC_STATE_COMMAND_BULK_REMOVE;
+    }
+
+    bool extractObjectTypeFromBulkKey(const std::string& key, std::string& objectType)
+    {
+        auto pos = key.find(":");
+        if (pos == std::string::npos)
+        {
+            return false;
+        }
+        objectType = key.substr(0, pos);
+        return true;
+    }
+
+    void parseJoinedFields(const std::string& joined, std::vector<swss::FieldValueTuple>& out)
+    {
+        size_t start = 0;
+        while (start <= joined.size())
+        {
+            size_t sep = joined.find('|', start);
+            std::string token = (sep == std::string::npos) ?
+                joined.substr(start) :
+                joined.substr(start, sep - start);
+
+            if (!token.empty())
+            {
+                size_t eq = token.find('=');
+                if (eq == std::string::npos)
+                {
+                    out.emplace_back(token, "");
+                }
+                else
+                {
+                    out.emplace_back(token.substr(0, eq), token.substr(eq + 1));
+                }
+            }
+
+            if (sep == std::string::npos)
+            {
+                break;
+            }
+            start = sep + 1;
+        }
+    }
+}
+
 ZeroMQChannel::ZeroMQChannel(
         _In_ const std::string& endpoint,
         _In_ const std::string& ntfEndpoint,
         _In_ Channel::Callback callback,
-        _In_ long zmqResponseBufferSize):
+        _In_ long zmqResponseBufferSize,
+        _In_ const std::string& dbName,
+        _In_ bool dbPersistence):
     Channel(callback),
     m_endpoint(endpoint),
     m_ntfEndpoint(ntfEndpoint),
@@ -39,6 +116,17 @@ ZeroMQChannel::ZeroMQChannel(
     }
 
     m_buffer.resize(m_zmqResponseBufferSize);
+
+    if (dbPersistence)
+    {
+        m_db = std::make_unique<swss::DBConnector>(dbName, 0);
+        m_asyncDBUpdater = std::make_unique<swss::AsyncDBUpdater>(m_db.get(), ASIC_STATE_TABLE);
+        SWSS_LOG_NOTICE("ZeroMQChannel async ASIC_DB persistence enabled for %s", dbName.c_str());
+    }
+    else
+    {
+        SWSS_LOG_NOTICE("ZeroMQChannel async ASIC_DB persistence disabled for %s", dbName.c_str());
+    }
 
     // configure ZMQ for main communication
 
@@ -245,6 +333,51 @@ void ZeroMQChannel::set(
                     zmq_strerror(zmq_errno()));
         }
         break;
+    }
+
+    if (m_asyncDBUpdater)
+    {
+        if (isBulkCommand(command))
+        {
+            std::string objectType;
+            if (!extractObjectTypeFromBulkKey(key, objectType))
+            {
+                return;
+            }
+
+            for (const auto& v : values)
+            {
+                auto clone = std::make_shared<swss::KeyOpFieldsValuesTuple>();
+                kfvKey(*clone) = objectType + ":" + fvField(v);
+
+                if (command == REDIS_ASIC_STATE_COMMAND_BULK_REMOVE)
+                {
+                    kfvOp(*clone) = DEL_COMMAND;
+                }
+                else
+                {
+                    kfvOp(*clone) = SET_COMMAND;
+                    parseJoinedFields(fvValue(v), kfvFieldsValues(*clone));
+                }
+
+                m_asyncDBUpdater->update(clone);
+            }
+        }
+        else
+        {
+            std::string op;
+            if (asicStateCommandToOp(command, op))
+            {
+                auto clone = std::make_shared<swss::KeyOpFieldsValuesTuple>();
+                kfvKey(*clone) = key;
+                kfvOp(*clone) = op;
+                for (const auto& v : values)
+                {
+                    kfvFieldsValues(*clone).push_back(v);
+                }
+                m_asyncDBUpdater->update(clone);
+            }
+        }
     }
 }
 
